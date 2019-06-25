@@ -1,0 +1,46 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - FitnessEvaluator",
+            "request": "launch",
+            "mainClass": "Model.FitnessEvaluator",
+            "projectName": "Project-Flounder-Remake_a9405139"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - FileManager",
+            "request": "launch",
+            "mainClass": "Model.FileManager",
+            "projectName": "Project-Flounder-Remake_a9405139"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - FileManager",
+            "request": "launch",
+            "mainClass": "Controller.FileManager",
+            "projectName": "Project-Flounder-Remake_a9405139"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Pool",
+            "request": "launch",
+            "mainClass": "Model.Pool",
+            "projectName": "Project-Flounder-Remake_a9405139"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Chromosome",
+            "request": "launch",
+            "mainClass": "Encoding.Chromosome",
+            "projectName": "Project-Flounder-Remake_a9405139"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Gene",
+            "request": "launch",
+            "mainClass": "Encoding.Gene",
+            "projectName": "Project-Flounder-Remake_a9405139"
+        }
+    ]
+}
