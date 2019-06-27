@@ -27,7 +27,9 @@ public class Gene {
         String s = String.format("%4s", Integer.toBinaryString(t));
         this.encoding = padWithZeros(s, 4);
     }
-
+    public Gene makeCopy(){
+        return new Gene(this.traitName, this.encoding);
+    }
 
 ///////////////////////////METHODS////////////////////////////////////////////////////////////////
     public void setEncoding(String encoding){
@@ -38,15 +40,14 @@ public class Gene {
     }
 
     public String toString(){
-        String output = "[(";
+        String output = "(";
         switch(this.traitName){
             case "Color":
-            output+=this.encoding+")(";
             Color c = decodeColor(this.encoding);
-            output+=c.getRed()+","+c.getGreen()+","+c.getBlue()+")]";
+            output+=c.getRed()+","+c.getGreen()+","+c.getBlue()+")";
             break;
             case "Pattern":
-            output+=this.encoding+")("+Integer.parseInt(this.encoding, 2)+")]";
+            output+=Integer.parseInt(this.encoding, 2)+")";
             break;
         }
         return output;

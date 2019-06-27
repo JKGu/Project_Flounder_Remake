@@ -63,7 +63,7 @@ public class Individual implements Comparable{
     }
 
     public String toString(){
-        return ""+this.fitnessLabel;
+        return this.chromosome.toString();
     }
 
 }

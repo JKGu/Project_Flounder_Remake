@@ -96,7 +96,7 @@ public ArrayList<Individual> findTopOnes(int num){
             case 'N':
             return select_Naive(num);
             case 'R':
-            return select_Rank();
+            return select_Rank(num);
             default:
             return null;
         }
@@ -110,7 +110,10 @@ public ArrayList<Individual> findTopOnes(int num){
         return array;
     }
 
-    public Individual[] select_Rank(){
+    public Individual[] select_Rank(int num){
+        Individual[] array = new Individual[num];
+
+        
         return null;
     }
 //--------------------------------------------------CROSSOVER
@@ -134,7 +137,7 @@ public ArrayList<Individual> findTopOnes(int num){
         for(int k=mainColorNum; k<l; k++){
             if(Math.random()<crossoverProbability) output[k].setEncoding(g1[k].getEncoding()); else output[k].setEncoding(g2[k].getEncoding());;
         }
-        Individual x = new Individual(output, i1);
+        Individual x = new Individual(output, i1.makeCopy());
         return x;
     }
 //----------------------------------------------------MUTATION
@@ -168,6 +171,7 @@ public ArrayList<Individual> findTopOnes(int num){
             findFitnessAndSort(this.population);
             ArrayList<Individual>  elites = findTopOnes(elitism);
 
+ 
 
             img = this.population.getImage();
             try {
@@ -191,7 +195,7 @@ public ArrayList<Individual> findTopOnes(int num){
             }
 
             //----------CROSSOVER & MUTATE
-            for(int i=0; i<offspringNum; i++){
+            for(int i=0; i<1; i++){
                 Individual offspring = crossover(parent1[i], parent2[i]);
                 img=offspring.getImage();
                 try {

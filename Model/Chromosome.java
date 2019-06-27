@@ -20,7 +20,7 @@ public class Chromosome {
         this.geneArray=array.clone();
     }
     public Chromosome makeCopy(){
-        Chromosome output = new Chromosome(this.geneArray.clone(), this);
+        Chromosome output = new Chromosome(this.getGeneArray(), this);
         return output;
     }
 
@@ -42,19 +42,25 @@ public class Chromosome {
     }
 
     public Gene[] getGeneArray(){
-        return this.geneArray.clone();
+        int x=this.geneArray.length;
+        Gene[] output = new Gene[x];
+        for(int i=0; i<x; i++){
+            output[i]=this.geneArray[i].makeCopy();
+        }
+        return output;
     }
+
     public void setGeneArray(Gene[] g){
         this.geneArray=g.clone();
     }
 
 
     public String toString(){
-        String output = "{"+mainColorNum+","+dimension+" ";
+        String output = "[";
         for(int i=0; i<geneArray.length; i++){
             output+=geneArray[i];
         }
-        return output+"}";
+        return output+"]";
     }
 
 
