@@ -112,9 +112,18 @@ public ArrayList<Individual> findTopOnes(int num){
 
     public Individual[] select_Rank(int num){
         Individual[] array = new Individual[num];
-
+        int sum = (num-1)*num/2;
+        for(int i =0; i<num; i++){
+            double random = Math.random()*sum;
+            int rank=0; int counter=0;
+            while(counter<random){
+                counter+=rank;
+                rank++;
+            }
+            array[i]=this.population.getPopulationList().get(populationSize-rank-1).makeCopy();
+        }
         
-        return null;
+        return array;
     }
 //--------------------------------------------------CROSSOVER
     public Individual crossover(Individual i1, Individual i2){
@@ -184,51 +193,20 @@ public ArrayList<Individual> findTopOnes(int num){
             Individual[] parent1 = select(offspringNum);
             Individual[] parent2 = select(offspringNum);
 
-            int counter =0;
-            for(Individual i: elites){
-                img=i.getImage();
-                try {
-                    ImageIO.write(img, "jpg", new File(fm.workingPath+"/Generated/"+(currentGeneration)+"["+counter+"]"+"X1.jpg"));
-                } catch (IOException e) {
-                }
-                counter++;
-            }
-
             //----------CROSSOVER & MUTATE
-            for(int i=0; i<1; i++){
+            for(int i=0; i<offspringNum; i++){
                 Individual offspring = crossover(parent1[i], parent2[i]);
-                img=offspring.getImage();
-                try {
-                    ImageIO.write(img, "jpg", new File(fm.workingPath+"/Generated/"+(currentGeneration)+"_"+i+"_"+"X2A.jpg"));
-                } catch (IOException e) {
-                }
                 offspring = mutate(offspring);
-                img=offspring.getImage();
-                try {
-                    ImageIO.write(img, "jpg", new File(fm.workingPath+"/Generated/"+(currentGeneration)+"_"+i+"_"+"X2B.jpg"));
-                } catch (IOException e) {
-                }
                 p.addIndividual(offspring);
-            }
 
-            counter =0;
-            for(Individual i: elites){
-                img=i.getImage();
-                try {
-                    ImageIO.write(img, "jpg", new File(fm.workingPath+"/Generated/"+(currentGeneration)+"["+counter+"]"+"X3.jpg"));
-                } catch (IOException e) {
-                }
-                counter++;
             }
-
 
             //-----------KEEP BEST ONES
             for(Individual i: elites){
                 p.addIndividual(i);
             }
-
             //------------UPDATE
-
+            this.population=p;
             this.currentGeneration++;
         }
     }
@@ -238,7 +216,7 @@ public ArrayList<Individual> findTopOnes(int num){
         pool.fm = new FileManager("C://Users/steve/Desktop/New folder/Path2");
         pool.fm.loadSamples();
         pool.fm.generateCroppedFiles(5, pool.dimension*pool.pointSizeInPixels, pool.dimension*pool.pointSizeInPixels);
-        pool.setParameters(100, 10, (float)0.1, (float) 1, 2, 'A', 'N');
+        pool.setParameters(100, 10, (float)0.5, (float) 0.1, 1, 'A', 'R');
         pool.initialize_simpleRandom();
         pool.evolve();
     }
