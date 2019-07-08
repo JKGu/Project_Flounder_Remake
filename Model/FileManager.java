@@ -57,7 +57,16 @@ public class FileManager {
             e.printStackTrace();
         }
     }
-    
+
+    public void writeFitnessData(double x){
+        try {
+            writer.write(x+"\n");
+            writer.flush();
+        } catch (IOException e) {
+            System.out.println("ERROR:"+e.toString());e.printStackTrace();
+        }
+    }
+
     public void loadSamples(){
         File dir = new File(workingPath+"/Original");
         File[] directoryListing = dir.listFiles();
@@ -75,6 +84,7 @@ public class FileManager {
     }
 
     public void generateCroppedFiles(int num, int w, int h){
+        num=num*originalFiles.size();
         for(int i=0; i<num; i++){
             int r = (int)(Math.random()*(originalFiles.size()));
             try {
@@ -83,10 +93,10 @@ public class FileManager {
                 int y = (int)(Math.random()*b.getHeight());
                 if(x+w<b.getWidth()-1&&y+h<b.getHeight()-1){
                     BufferedImage tmp = b.getSubimage(x, y, w, h);
-                    tmp = blurAndResize(tmp, 2);
+                    //tmp = blurAndResize(tmp, 2);
                     try {
-                        ImageIO.write(tmp, "jpg", new File(workingPath+"/Cropped/"+Integer.toString(i,16)+"K.jpg"));
-                        this.croppedFiles.add(workingPath+"/Cropped/"+Integer.toString(i,16)+"K.jpg");
+                        ImageIO.write(tmp, "bmp", new File(workingPath+"/Cropped/"+Integer.toString(i,16)+".bmp"));
+                        this.croppedFiles.add(workingPath+"/Cropped/"+Integer.toString(i,16)+".bmp");
                     } catch (IOException e) {
                     }
                 }else{

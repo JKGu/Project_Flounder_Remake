@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - FitnessEvaluator",
+            "request": "launch",
+            "mainClass": "Model.FitnessEvaluator",
+            "projectName": "Project_Flounder_Remake_cb53979"
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - Pool",
             "request": "launch",
             "mainClass": "Model.Pool",

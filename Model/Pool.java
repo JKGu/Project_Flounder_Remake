@@ -51,21 +51,21 @@ public class Pool {
     }
 
 //------------------------------------------------------FITNESS
-public float findFitness(Individual i){
+public double findFitness(Individual i){
     switch(fitnessEvaluationMethod){
         case 'A'://AUTO
-        float fitness=0;
-        BufferedImage bi1=FileManager.blurAndResize(i.getImage(), 2); 
+        double fitness=0;
+        BufferedImage bi1=i.getImage();//FileManager.blurAndResize(i.getImage(), 2); 
         ArrayList<String> croppedList = fm.croppedFiles;
         for(String x: croppedList){
             try {
                 BufferedImage bi2 = ImageIO.read(new File(x));
-                fitness+=FitnessEvaluator.compareColorSimilarity(bi1, bi2);
+                fitness+=FitnessEvaluator.iterateImagesAndFindFitness(bi1, bi2);
             } catch (IOException e) {
             }
         }
         fitness/=croppedList.size();
-        return fitness;
+        return fitness;//Math.sqrt(FitnessEvaluator.awardLargeBlock(bi1, 3));
         case 'H'://HUMAN
         return -1;
         default:
@@ -74,7 +74,7 @@ public float findFitness(Individual i){
 }
 public void findFitnessAndSort(Population p){
     for(Individual i : p.getPopulationList()) {
-        float score = findFitness(i);
+        double score = findFitness(i);
         i.fitnessLabel=score;
     }
     p.sort();
@@ -143,8 +143,19 @@ public ArrayList<Individual> findTopOnes(int num){
             if(Math.random()<crossoverProbability) outputHSB[2]=hsb1[2]; else outputHSB[2]=hsb2[2];
             output[k].setEncoding(Gene.encodeColorToBinary(Color.getHSBColor(outputHSB[0], outputHSB[1], outputHSB[2])));
         }
-        for(int k=mainColorNum; k<l; k++){
-            if(Math.random()<crossoverProbability) output[k].setEncoding(g1[k].getEncoding()); else output[k].setEncoding(g2[k].getEncoding());;
+        int numOfPoints = dimension*dimension;
+        int numOfBlocks = (dimension/4)*(dimension/4);
+
+        for(int k=mainColorNum; k<l; k+=4){
+            if(Math.random()<crossoverProbability){
+                for(int j=0; j<4; j++){
+                    output[k+j].setEncoding(g1[k+j].getEncoding());
+                }
+            }  else {
+                for(int j=0; j<4; j++){
+                    output[k+j].setEncoding(g2[k+j].getEncoding());
+                }
+            }
         }
         Individual x = new Individual(output, i1.makeCopy());
         return x;
@@ -167,6 +178,11 @@ public ArrayList<Individual> findTopOnes(int num){
                 g[k].setEncoding(Gene.encodeNumber((int)(Math.random()*mainColorNum)));
             }
         }
+        if(Math.random()<mutationProbability){
+            int index1=(int)(Math.random()*mainColorNum);int index2=(int)(Math.random()*mainColorNum);
+            Gene tmp = g[index1].makeCopy();
+            g[index1]=g[index2].makeCopy();g[index2]=tmp;
+        }
         Individual output= new Individual(g, i);
         return output;
     }
@@ -178,16 +194,19 @@ public ArrayList<Individual> findTopOnes(int num){
 
             Population p = new Population(populationSize, mainColorNum, dimension, pointSizeInPixels);
             findFitnessAndSort(this.population);
+
             ArrayList<Individual>  elites = findTopOnes(elitism);
-
- 
-
+            
+            if(currentGeneration%10==0){
             img = this.population.getImage();
             try {
-                ImageIO.write(img, "jpg", new File(fm.workingPath+"/Generated/"+(currentGeneration)+".jpg"));
+                ImageIO.write(img, "bmp", new File(fm.workingPath+"/Generated/"+(currentGeneration)+".bmp"));
             } catch (IOException e) {
             }
+            }
 
+            fm.writeFitnessData(this.population.getPopulationList().get(0).fitnessLabel);
+            System.out.println(this.population.getPopulationList().get(0).fitnessLabel);
             //----------SELECT
             int offspringNum = populationSize-elitism;
             Individual[] parent1 = select(offspringNum);
@@ -209,15 +228,23 @@ public ArrayList<Individual> findTopOnes(int num){
             this.population=p;
             this.currentGeneration++;
         }
+        BufferedImage img = this.population.getImage();
+        try {
+            ImageIO.write(img, "bmp", new File(fm.workingPath+"/Generated/"+(totalGenerations)+".bmp"));
+        } catch (IOException e) {
+        }
     }
 
+
     public static void main (String[] args){
-        Pool pool = new Pool(3, 10, 5);
+        Pool pool = new Pool(5, 30, 4);
         pool.fm = new FileManager("C://Users/steve/Desktop/New folder/Path2");
         pool.fm.loadSamples();
-        pool.fm.generateCroppedFiles(5, pool.dimension*pool.pointSizeInPixels, pool.dimension*pool.pointSizeInPixels);
-        pool.setParameters(100, 10, (float)0.5, (float) 0.1, 1, 'A', 'R');
+
+        pool.fm.generateCroppedFiles(1, pool.dimension*pool.pointSizeInPixels, pool.dimension*pool.pointSizeInPixels);
+        pool.setParameters(50000, 20, (float)0.3, (float) 0.1, 2, 'A', 'R');
         pool.initialize_simpleRandom();
+        System.out.println("START...");
         pool.evolve();
     }
 

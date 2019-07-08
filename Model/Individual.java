@@ -8,7 +8,7 @@ public class Individual implements Comparable{
     private int pointSizeInPixels;
     private int mainColorNum;
     private int dimension;
-    protected float fitnessLabel;
+    protected double fitnessLabel;
 
     public Individual(int mainColorNum, int dimension, int pointSizeInPixels){
         this.chromosome=new Chromosome(mainColorNum, dimension);
@@ -59,7 +59,7 @@ public class Individual implements Comparable{
     @Override
     public int compareTo(Object o) {
         Individual i=(Individual)o;
-        return Float.compare(i.fitnessLabel, this.fitnessLabel);
+        return Double.compare(i.fitnessLabel, this.fitnessLabel);
     }
 
     public String toString(){
