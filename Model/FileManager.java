@@ -84,6 +84,10 @@ public class FileManager {
     }
 
     public void generateCroppedFiles(int num, int w, int h){
+        
+        this.croppedFiles.add(workingPath+"/Cropped/0.bmp");
+       // this.croppedFiles.add(workingPath+"/Cropped/1.bmp");
+        /*
         num=num*originalFiles.size();
         for(int i=0; i<num; i++){
             int r = (int)(Math.random()*(originalFiles.size()));
@@ -106,6 +110,7 @@ public class FileManager {
                 if(i!=0) i--;
             }
         }
+        */
     }
 
     public static BufferedImage blurAndResize(BufferedImage bi, int pixel){

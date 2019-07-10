@@ -2,22 +2,25 @@ package Model;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.io.*;
+import javax.imageio.*;
 
-import javax.imageio.ImageIO;
 
 public class FitnessEvaluator {
 
-
-    private static double findHSBDistance(int rgb1, int rgb2){
-        float[] c1= findCoordinateInColorSpace(rgb1);   
-        float[] c2= findCoordinateInColorSpace(rgb2); 
-
-        double distance = Math.sqrt(Math.pow(c1[0]-c2[0], 2) + Math.pow(c1[1]- c2[1], 2) + Math.pow(c1[2] - c2[2], 2));
-        return distance;
+    public static double iterateImagesAndFindFitness(BufferedImage bi1, BufferedImage bi2){
+        int width = bi1.getWidth();
+        double score=0;
+        for(int i=0; i<width; i++){
+            for(int j=0; j<width;j++){
+                int rgb1=bi1.getRGB(i, j); int rgb2=bi2.getRGB(i, j);
+                score+=findColorDifference(rgb1, rgb2);
+            }
+        }
+        score/=width*width;
+        return curve2(score);
     }
+
     private static float[] findCoordinateInColorSpace(int rgb){
         float[] c=Color.RGBtoHSB((rgb & 0x00ff0000) >> 16,(rgb & 0x0000ff00) >> 8,rgb & 0x000000ff, null);  
         float x,y,z,r; 
@@ -32,106 +35,45 @@ public class FitnessEvaluator {
         return new float[] {x,y,z};
     }
 
-
-    public static double iterateImagesAndFindFitness(BufferedImage bi1, BufferedImage bi2){
-        int width = bi1.getWidth();
-        int bondary = width-1;
-        double colorSimilarityScore=0;
-        double contrastScore=0;
-        double largeBlockScore=0;
-        double blendInScore=0;
-        for(int i=1; i<bondary; i++){
-            for(int j=1; j<bondary;j++){
-                int rgb1=bi1.getRGB(i, j); int rgb2=bi2.getRGB(i, j);
-                //colorSimilarityScore+=compareColorSimilarity(rgb1, rgb2);
-                //contrastScore+=Math.abs(getContrast(bi1, i, j)-getContrast(bi2, i, j));
-                blendInScore+=blendIn(bi1, bi2, i, j);
-            }
-        }
-        //colorSimilarityScore/=(width-2)*(width-2);
-        //contrastScore/=(width-2)*(width-2);
-        blendInScore/=(width-2)*(width-2);
-        return blendInScore;//*contrastScore;
+    private static double findHSBDistance(int rgb1, int rgb2){
+        float[] c1= findCoordinateInColorSpace(rgb1);   
+        float[] c2= findCoordinateInColorSpace(rgb2); 
+        double distance = Math.sqrt(Math.pow(c1[0]-c2[0], 2) + Math.pow(c1[1]- c2[1], 2) + Math.pow(c1[2] - c2[2], 2));
+        return distance;
     }
 
-    public static float awardLargeBlock(BufferedImage bi, int num){
-        int width = bi.getWidth();
-        float score=0;
-        for(int i=0; i<width; i+=num){
-            for(int j=0; j<width;j+=num){
-                int rgbReference=bi.getRGB(i, j);
-                int count = 0;
-                for(int m=0; m<num; m++){
-                    for(int n=0; n<num; n++){
-                        if(bi.getRGB(i+m, j+n)==rgbReference){
-                            count++;
-                        }
-                    }
-                }
-                score+=count-1;
-            }
-        }
-        return (float) (0.99*(score / (width*width))+0.01);
+    private static double findColorDifference(int rgb1, int rgb2){//https://www.compuphase.com/cmetric.htm
+        float[] c1 = {(rgb1 & 0x00ff0000) >> 16,(rgb1 & 0x0000ff00) >> 8,rgb1 & 0x000000ff};
+        float[] c2 = {(rgb2 & 0x00ff0000) >> 16,(rgb2 & 0x0000ff00) >> 8,rgb2 & 0x000000ff};
+        float r = (c1[0]+c2[0])/2;
+        float dR = c1[0]-c2[0];
+        float dG = c1[1]-c2[1];
+        float dB = c1[2]-c2[2];
+        double output = Math.sqrt((2+r/256)*(dR*dR)+4*(dG*dG)+(2+(255-r)/256)*(dB*dB));
+        output=output/765;
+        return output;
     }
 
-    private static double compareColorSimilarity(int rgb1, int rgb2){
-        return 2/(findHSBDistance(rgb1, rgb2)+1)-1;
+    private static double curve(double x){
+        double output =  -125913*(x-1)*(x-1)*(2209*x*x-2538*x-1271)/160000000;
+        if(output<0)output=0;if(output>1)output=1;
+        return output;
     }
 
-    private static double getContrast(BufferedImage bi, int i, int j){
-                double c=  findHSBDistance(bi.getRGB(i, j), bi.getRGB(i + 1, j))
-                + findHSBDistance(bi.getRGB(i, j), bi.getRGB(i - 1, j))
-                + findHSBDistance(bi.getRGB(i, j), bi.getRGB(i, j + 1))
-                + findHSBDistance(bi.getRGB(i, j), bi.getRGB(i, j - 1));
-        return c/4;
-    }
-    
-    private static double blendIn(BufferedImage bi1, BufferedImage bi2, int i, int j){
-        double min = 0;
-        double distance = 0;
-        int rgb = bi1.getRGB(i, j);
-        distance = findHSBDistance(rgb, bi2.getRGB(i-1, j-1));
-        if(distance<min) min = distance;
-        distance = findHSBDistance(rgb, bi2.getRGB(i-1, j));
-        if(distance<min) min = distance;
-        distance = findHSBDistance(rgb, bi2.getRGB(i-1, j+1));
-        if(distance<min) min = distance;
-        distance = findHSBDistance(rgb, bi2.getRGB(i, j-1));
-        if(distance<min) min = distance;
-        distance = findHSBDistance(rgb, bi2.getRGB(i, j));
-        if(distance<min) min = distance;
-        distance = findHSBDistance(rgb, bi2.getRGB(i, j+1));
-        if(distance<min) min = distance;
-        distance = findHSBDistance(rgb, bi2.getRGB(i+1, j-1));
-        if(distance<min) min = distance;
-        distance = findHSBDistance(rgb, bi2.getRGB(i+1, j));
-        if(distance<min) min = distance;
-        distance = findHSBDistance(rgb, bi2.getRGB(i+1, j+1));
-        if(distance<min) min = distance;
-        return 1-distance;
+    private static double curve2(double x){
+        return -Math.pow(x, 0.5)+1;
     }
 
-    private static BufferedImage patternImage(BufferedImage bi){
-        int width = bi.getWidth();
-        int rgb = Color.getHSBColor((float)0.5, (float)0.5, (float)0.5).getRGB();
-        for(int i=0; i<width; i++){
-            for(int j=0; j<width; j++){
-                //float distance = (float)findHSBDistance(bi.getRGB(i, j), rgb);
-                float[] coordinate = findCoordinateInColorSpace(bi.getRGB(i, j));
-                Color output = new Color(coordinate[0],coordinate[1], coordinate[2]);
-                bi.setRGB(i, j, output.getRGB());
-            }
-        }
-        return bi;
-    }
 public static void main (String[] args){
+    
     try {
         BufferedImage bi1 = ImageIO.read(new File("C://Users/steve/Desktop/New folder/Path2/Cropped/0.bmp"));
-        bi1 = patternImage(bi1);
-        ImageIO.write(bi1, "bmp", new File("C://Users/steve/Desktop/New folder/Path2/Cropped/0OUTPUT.bmp"));
+        BufferedImage bi2 = ImageIO.read(new File("C://Users/steve/Desktop/New folder/Path2/Cropped/3.bmp"));
+        System.out.println(iterateImagesAndFindFitness(bi1, bi2));
     } catch (IOException e) {
         System.out.println("ERROR");
     }
+    
 }
 
     

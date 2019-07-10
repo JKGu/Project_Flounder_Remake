@@ -19,6 +19,7 @@ public class Pool {
     protected int mainColorNum;
     protected int dimension;
     protected int pointSizeInPixels;
+    protected int initialPopulationSize;
 ////////////////////////VARIABLES MAY BE CHANGED DURING EVOLUTION
     protected int totalGenerations;
     protected int populationSize;
@@ -43,7 +44,7 @@ public class Pool {
     }
 
     public void setParameters(int totalGenerations, int populationSize, float crossoverProbability, float mutationProbability, int elitism, char fitnessEvaluationMethod, char selectionMethod){
-        this.totalGenerations=totalGenerations;this.populationSize=populationSize;this.crossoverProbability=crossoverProbability; this.mutationProbability=mutationProbability; this.elitism=elitism; this.fitnessEvaluationMethod=fitnessEvaluationMethod; this.selectionMethod=selectionMethod;
+        this.totalGenerations=totalGenerations;this.initialPopulationSize=populationSize;this.populationSize=populationSize;this.crossoverProbability=crossoverProbability; this.mutationProbability=mutationProbability; this.elitism=elitism; this.fitnessEvaluationMethod=fitnessEvaluationMethod; this.selectionMethod=selectionMethod;
         this.population.setSize(populationSize);
     }
     public void initialize_simpleRandom(){
@@ -54,17 +55,20 @@ public class Pool {
 public double findFitness(Individual i){
     switch(fitnessEvaluationMethod){
         case 'A'://AUTO
-        double fitness=0;
+        double fitness=1;
         BufferedImage bi1=i.getImage();//FileManager.blurAndResize(i.getImage(), 2); 
         ArrayList<String> croppedList = fm.croppedFiles;
         for(String x: croppedList){
             try {
                 BufferedImage bi2 = ImageIO.read(new File(x));
-                fitness+=FitnessEvaluator.iterateImagesAndFindFitness(bi1, bi2);
+                double f=FitnessEvaluator.iterateImagesAndFindFitness(bi1, bi2);
+                fitness*=f;
+                //if(fitness<f)fitness=f;
             } catch (IOException e) {
             }
         }
-        fitness/=croppedList.size();
+        double rt = 1/(double)croppedList.size();
+        fitness = Math.pow(fitness, rt);
         return fitness;//Math.sqrt(FitnessEvaluator.awardLargeBlock(bi1, 3));
         case 'H'://HUMAN
         return -1;
@@ -112,15 +116,16 @@ public ArrayList<Individual> findTopOnes(int num){
 
     public Individual[] select_Rank(int num){
         Individual[] array = new Individual[num];
-        int sum = (num-1)*num/2;
+        int populationListSize = this.population.getPopulationList().size();
+        int sum = (1+populationListSize)*populationListSize/2;
         for(int i =0; i<num; i++){
-            double random = Math.random()*sum;
-            int rank=0; int counter=0;
-            while(counter<random){
-                counter+=rank;
+            int random = (int)(Math.random()*(sum))+1;
+            int rank=0; int accum=0;
+            while(accum<random){
                 rank++;
+                accum+=rank;
             }
-            array[i]=this.population.getPopulationList().get(populationSize-rank-1).makeCopy();
+            array[i]=this.population.getPopulationList().get(populationListSize-rank).makeCopy();
         }
         
         return array;
@@ -194,7 +199,10 @@ public ArrayList<Individual> findTopOnes(int num){
 
             Population p = new Population(populationSize, mainColorNum, dimension, pointSizeInPixels);
             findFitnessAndSort(this.population);
-
+            //float range = (float)(this.population.getPopulationList().get(0).fitnessLabel-this.population.getPopulationList().get(this.populationSize-1).fitnessLabel);
+            //this.mutationProbability = (float)((1-range));
+           // this.populationSize = (int)(0.5*standardPopulationSize+5*range*standardPopulationSize);
+           // if(this.populationSize<elitism) this.populationSize = elitism;
             ArrayList<Individual>  elites = findTopOnes(elitism);
             
             if(currentGeneration%10==0){
@@ -227,6 +235,7 @@ public ArrayList<Individual> findTopOnes(int num){
             //------------UPDATE
             this.population=p;
             this.currentGeneration++;
+
         }
         BufferedImage img = this.population.getImage();
         try {
@@ -241,8 +250,8 @@ public ArrayList<Individual> findTopOnes(int num){
         pool.fm = new FileManager("C://Users/steve/Desktop/New folder/Path2");
         pool.fm.loadSamples();
 
-        pool.fm.generateCroppedFiles(1, pool.dimension*pool.pointSizeInPixels, pool.dimension*pool.pointSizeInPixels);
-        pool.setParameters(50000, 20, (float)0.3, (float) 0.1, 2, 'A', 'R');
+        pool.fm.generateCroppedFiles(2, pool.dimension*pool.pointSizeInPixels, pool.dimension*pool.pointSizeInPixels);
+        pool.setParameters(50000,50, (float)0.3, (float) 0.001, 5, 'A', 'R');
         pool.initialize_simpleRandom();
         System.out.println("START...");
         pool.evolve();
