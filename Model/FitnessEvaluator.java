@@ -4,20 +4,30 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import javax.imageio.*;
-
+import java.util.*;
 
 public class FitnessEvaluator {
 
     public static double iterateImagesAndFindFitness(BufferedImage bi1, BufferedImage bi2){
         int width = bi1.getWidth();
-        double score=0;
+        //double score=0;
+        ArrayList<Double> scoreList = new ArrayList<Double>();
         for(int i=0; i<width; i++){
             for(int j=0; j<width;j++){
                 int rgb1=bi1.getRGB(i, j); int rgb2=bi2.getRGB(i, j);
-                score+=findColorDifference(rgb1, rgb2);
+                //score+=findColorDifference(rgb1, rgb2);
+                scoreList.add(findColorDifference(rgb1, rgb2));
             }
         }
-        score/=width*width;
+        //score/=width*width;
+        Collections.sort(scoreList);
+        int cutPoint = (int)(scoreList.size()*0.2); 
+        scoreList=new ArrayList<Double>(scoreList.subList(0, scoreList.size()));
+        double score=0;
+        for(Double x : scoreList){
+            score+=x;
+        }
+        score/=scoreList.size();
         return curve2(score);
     }
 
@@ -61,7 +71,8 @@ public class FitnessEvaluator {
     }
 
     private static double curve2(double x){
-        return -Math.pow(x, 0.5)+1;
+        return 1-x;
+        //return -Math.pow(x, 0.7)+1;
     }
 
 public static void main (String[] args){

@@ -85,9 +85,11 @@ public class FileManager {
 
     public void generateCroppedFiles(int num, int w, int h){
         
-        this.croppedFiles.add(workingPath+"/Cropped/0.bmp");
-       // this.croppedFiles.add(workingPath+"/Cropped/1.bmp");
-        /*
+        // this.croppedFiles.add(workingPath+"/Cropped/0.bmp");
+        // this.croppedFiles.add(workingPath+"/Cropped/1.bmp");
+        // this.croppedFiles.add(workingPath+"/Cropped/2.bmp");
+        // this.croppedFiles.add(workingPath+"/Cropped/3.bmp");
+        
         num=num*originalFiles.size();
         for(int i=0; i<num; i++){
             int r = (int)(Math.random()*(originalFiles.size()));
@@ -110,13 +112,12 @@ public class FileManager {
                 if(i!=0) i--;
             }
         }
-        */
+        
     }
 
     public static BufferedImage blurAndResize(BufferedImage bi, int pixel){
         int newWidth = bi.getWidth()/pixel; int range =newWidth*pixel;
         BufferedImage output = new BufferedImage(newWidth, newWidth, BufferedImage.TYPE_3BYTE_BGR);
-        int h=bi.getHeight(); int w=bi.getWidth();
         for(int m=0; m<range; m+=pixel){
             for(int n=0; n<range; n+=pixel){
                 int red =0; int blue = 0; int green = 0;

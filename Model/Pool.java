@@ -56,15 +56,20 @@ public double findFitness(Individual i){
     switch(fitnessEvaluationMethod){
         case 'A'://AUTO
         double fitness=1;
-        BufferedImage bi1=i.getImage();//FileManager.blurAndResize(i.getImage(), 2); 
+        BufferedImage pattern=i.getImage();//FileManager.blurAndResize(i.getImage(), 2); 
+        BufferedImage patternMacro=FileManager.blurAndResize(pattern, 3);
         ArrayList<String> croppedList = fm.croppedFiles;
         for(String x: croppedList){
             try {
-                BufferedImage bi2 = ImageIO.read(new File(x));
-                double f=FitnessEvaluator.iterateImagesAndFindFitness(bi1, bi2);
-                fitness*=f;
-                //if(fitness<f)fitness=f;
+                BufferedImage sample = ImageIO.read(new File(x));
+                BufferedImage sampleMacro = FileManager.blurAndResize(sample, 3);
+                double f=FitnessEvaluator.iterateImagesAndFindFitness(pattern, sample);
+                double f2=FitnessEvaluator.iterateImagesAndFindFitness(patternMacro, sampleMacro);
+                //System.out.println("X"+f+"X"+f2);
+               double score = (f+f2)/2;
+                fitness*=score;
             } catch (IOException e) {
+                System.out.println(e.toString());
             }
         }
         double rt = 1/(double)croppedList.size();
@@ -204,17 +209,18 @@ public ArrayList<Individual> findTopOnes(int num){
            // this.populationSize = (int)(0.5*standardPopulationSize+5*range*standardPopulationSize);
            // if(this.populationSize<elitism) this.populationSize = elitism;
             ArrayList<Individual>  elites = findTopOnes(elitism);
-            
-            if(currentGeneration%10==0){
+            fm.writeFitnessData(this.population.getPopulationList().get(0).fitnessLabel);
+ 
+            if(currentGeneration%50==0){
             img = this.population.getImage();
             try {
                 ImageIO.write(img, "bmp", new File(fm.workingPath+"/Generated/"+(currentGeneration)+".bmp"));
             } catch (IOException e) {
             }
             }
-
-            fm.writeFitnessData(this.population.getPopulationList().get(0).fitnessLabel);
+            
             System.out.println(this.population.getPopulationList().get(0).fitnessLabel);
+
             //----------SELECT
             int offspringNum = populationSize-elitism;
             Individual[] parent1 = select(offspringNum);
@@ -250,8 +256,8 @@ public ArrayList<Individual> findTopOnes(int num){
         pool.fm = new FileManager("C://Users/steve/Desktop/New folder/Path2");
         pool.fm.loadSamples();
 
-        pool.fm.generateCroppedFiles(2, pool.dimension*pool.pointSizeInPixels, pool.dimension*pool.pointSizeInPixels);
-        pool.setParameters(50000,50, (float)0.3, (float) 0.001, 5, 'A', 'R');
+        pool.fm.generateCroppedFiles(20, pool.dimension*pool.pointSizeInPixels, pool.dimension*pool.pointSizeInPixels);
+        pool.setParameters(100000,50, (float)0.3, (float) 0.001, 5, 'A', 'R');
         pool.initialize_simpleRandom();
         System.out.println("START...");
         pool.evolve();
