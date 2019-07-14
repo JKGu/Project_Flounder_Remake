@@ -84,32 +84,27 @@ public class FileManager {
     }
 
     public void generateCroppedFiles(int num, int w, int h){
-        
-        // this.croppedFiles.add(workingPath+"/Cropped/0.bmp");
-        // this.croppedFiles.add(workingPath+"/Cropped/1.bmp");
-        // this.croppedFiles.add(workingPath+"/Cropped/2.bmp");
-        // this.croppedFiles.add(workingPath+"/Cropped/3.bmp");
-        
-        num=num*originalFiles.size();
-        for(int i=0; i<num; i++){
-            int r = (int)(Math.random()*(originalFiles.size()));
-            try {
-                BufferedImage b = ImageIO.read(new File(originalFiles.get(r)));
-                int x = (int)(Math.random()*b.getWidth());
-                int y = (int)(Math.random()*b.getHeight());
-                if(x+w<b.getWidth()-1&&y+h<b.getHeight()-1){
-                    BufferedImage tmp = b.getSubimage(x, y, w, h);
-                    //tmp = blurAndResize(tmp, 2);
-                    try {
-                        ImageIO.write(tmp, "bmp", new File(workingPath+"/Cropped/"+Integer.toString(i,16)+".bmp"));
-                        this.croppedFiles.add(workingPath+"/Cropped/"+Integer.toString(i,16)+".bmp");
-                    } catch (IOException e) {
+        File dirOriginal = new File(workingPath+"/Original");
+        File[] dirOriginalListing = dirOriginal.listFiles();
+        for(File child : dirOriginalListing){
+            new File(workingPath+"/Cropped/"+child.getName()).mkdirs();
+            for(int i=0; i<num; i++){
+                try {
+                    BufferedImage b = ImageIO.read(child);
+                    int x = (int)(Math.random()*b.getWidth());
+                    int y = (int)(Math.random()*b.getHeight());
+                    if(x+w<b.getWidth()-1&&y+h<b.getHeight()-1){
+                        BufferedImage tmp = b.getSubimage(x, y, w, h);
+                        try {
+                            ImageIO.write(tmp, "bmp", new File(workingPath+"/Cropped/"+child.getName()+"/"+Integer.toString(i,16)+".bmp"));
+                        } catch (IOException e) {
+                        }
+                    }else{
+                        if(i!=0) i--;
                     }
-                }else{
+                } catch (IOException e) {
                     if(i!=0) i--;
                 }
-            } catch (IOException e) {
-                if(i!=0) i--;
             }
         }
         

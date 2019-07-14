@@ -56,25 +56,36 @@ public double findFitness(Individual i){
     switch(fitnessEvaluationMethod){
         case 'A'://AUTO
         double fitness=1;
-        BufferedImage pattern=i.getImage();//FileManager.blurAndResize(i.getImage(), 2); 
+        BufferedImage pattern=i.getImage();
         BufferedImage patternMacro=FileManager.blurAndResize(pattern, 3);
-        ArrayList<String> croppedList = fm.croppedFiles;
-        for(String x: croppedList){
-            try {
-                BufferedImage sample = ImageIO.read(new File(x));
-                BufferedImage sampleMacro = FileManager.blurAndResize(sample, 3);
-                double f=FitnessEvaluator.iterateImagesAndFindFitness(pattern, sample);
-                double f2=FitnessEvaluator.iterateImagesAndFindFitness(patternMacro, sampleMacro);
-                //System.out.println("X"+f+"X"+f2);
-               double score = (f+f2)/2;
-                fitness*=score;
-            } catch (IOException e) {
-                System.out.println(e.toString());
+        File dirMain = new File(fm.workingPath+"/Cropped");
+        File[] dirMainListing = dirMain.listFiles();
+        for(File child: dirMainListing){
+            File[] imageListing = child.listFiles();
+            ArrayList<Double> scoreList = new ArrayList<Double>();
+            for(File c: imageListing){
+                try {
+                    BufferedImage sample = ImageIO.read(c);
+                    BufferedImage sampleMacro = FileManager.blurAndResize(sample, 3);
+                    double f=FitnessEvaluator.iterateImagesAndFindFitness(pattern, sample);
+                    double f2=FitnessEvaluator.iterateImagesAndFindFitness(patternMacro, sampleMacro);
+                    double score = (f+f2)/2;
+                    scoreList.add(score);
+                } catch (IOException e) {
+                    System.out.println(e.toString());
+                }
             }
+            Collections.sort(scoreList);
+            int cutPoint = (int)(scoreList.size()*0.8); 
+            scoreList=new ArrayList<Double>(scoreList.subList(cutPoint, scoreList.size()));
+            double score=0;
+            for(Double x : scoreList){score+=x;}
+            score/=scoreList.size();
+            fitness*=score;
         }
-        double rt = 1/(double)croppedList.size();
+        double rt =1/(double)dirMainListing.length;
         fitness = Math.pow(fitness, rt);
-        return fitness;//Math.sqrt(FitnessEvaluator.awardLargeBlock(bi1, 3));
+        return fitness;
         case 'H'://HUMAN
         return -1;
         default:
@@ -210,15 +221,14 @@ public ArrayList<Individual> findTopOnes(int num){
            // if(this.populationSize<elitism) this.populationSize = elitism;
             ArrayList<Individual>  elites = findTopOnes(elitism);
             fm.writeFitnessData(this.population.getPopulationList().get(0).fitnessLabel);
- 
+
             if(currentGeneration%50==0){
-            img = this.population.getImage();
-            try {
-                ImageIO.write(img, "bmp", new File(fm.workingPath+"/Generated/"+(currentGeneration)+".bmp"));
-            } catch (IOException e) {
+                img = this.population.getImage();
+                try {
+                   ImageIO.write(img, "bmp", new File(fm.workingPath+"/Generated/"+(currentGeneration)+".bmp"));
+                 } catch (IOException e) {
+                }
             }
-            }
-            
             System.out.println(this.population.getPopulationList().get(0).fitnessLabel);
 
             //----------SELECT
@@ -257,7 +267,7 @@ public ArrayList<Individual> findTopOnes(int num){
         pool.fm.loadSamples();
 
         pool.fm.generateCroppedFiles(20, pool.dimension*pool.pointSizeInPixels, pool.dimension*pool.pointSizeInPixels);
-        pool.setParameters(100000,50, (float)0.3, (float) 0.001, 5, 'A', 'R');
+        pool.setParameters(100000,50, (float)0.3, (float) 0.0001, 5, 'A', 'R');
         pool.initialize_simpleRandom();
         System.out.println("START...");
         pool.evolve();

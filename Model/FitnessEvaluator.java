@@ -11,24 +11,23 @@ public class FitnessEvaluator {
     public static double iterateImagesAndFindFitness(BufferedImage bi1, BufferedImage bi2){
         int width = bi1.getWidth();
         //double score=0;
-        ArrayList<Double> scoreList = new ArrayList<Double>();
+        ArrayList<Double> distanceList = new ArrayList<Double>();
         for(int i=0; i<width; i++){
             for(int j=0; j<width;j++){
                 int rgb1=bi1.getRGB(i, j); int rgb2=bi2.getRGB(i, j);
                 //score+=findColorDifference(rgb1, rgb2);
-                scoreList.add(findColorDifference(rgb1, rgb2));
+                distanceList.add(findColorDifference(rgb1, rgb2));
             }
         }
         //score/=width*width;
-        Collections.sort(scoreList);
-        int cutPoint = (int)(scoreList.size()*0.2); 
-        scoreList=new ArrayList<Double>(scoreList.subList(0, scoreList.size()));
-        double score=0;
-        for(Double x : scoreList){
-            score+=x;
+        Collections.sort(distanceList);
+        distanceList=new ArrayList<Double>(distanceList.subList(0,(int)(distanceList.size()*0.9) ));
+        double distance=0;
+        for(Double x : distanceList){
+            distance+=x;
         }
-        score/=scoreList.size();
-        return curve2(score);
+        distance/=distanceList.size();
+        return curve2(distance);
     }
 
     private static float[] findCoordinateInColorSpace(int rgb){
