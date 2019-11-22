@@ -1,6 +1,6 @@
 This is an individual Java project based on Genetic Algorithm. It takes in a list of sample images of the target environment and automatically search for the optimal pattern for concealment.
 
-
+This is a "remake" of the previous Project Flounder with better structure designs.
 
 
 
