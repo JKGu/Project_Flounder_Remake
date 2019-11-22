@@ -1,3 +1,14 @@
+This is an individual Java project based on Genetic Algorithm. It takes in a list of sample images of the target environment and automatically search for the optimal pattern for concealment.
+
+
+
+
+
+
+
+Miscellaneous notes
+
+
 Encoding:
 
 Gene:     Each gene encodes a trait.
